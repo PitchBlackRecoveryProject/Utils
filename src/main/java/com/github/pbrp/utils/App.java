@@ -13,7 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.pbrp;
+package com.github.pbrp.utils;
+
+import static com.github.pbrp.utils.Release.writeToFile;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import org.apache.commons.io.FileUtils;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 /**
  *
@@ -21,4 +38,30 @@ package com.github.pbrp;
  */
 public class App {
     
+    public static int checkUpdate(String s1, String s2) throws MalformedURLException, FileNotFoundException, IOException, ParseException {
+        URL url = new URL("https://raw.githubusercontent.com/PitchBlack-Recovery/vendor_pb/pb/pb.releases");
+
+        JSONParser parser = new JSONParser();
+        Reader reader = new BufferedReader(new InputStreamReader(url.openStream()));
+
+        Object jsonObj = parser.parse(reader);
+        JSONObject release = (JSONObject) jsonObj;
+        
+        //System.out.println(jsonObject.toString());
+        
+        if(release.containsKey(s1)) {
+            if(release.get(s1).equals(s2)) {
+                return 1;
+            } else {
+                return 0;
+            }
+            
+        } else {
+            return -1;
+        }
+    }
+    
+    public static void main(String[] args) throws MalformedURLException, IOException, FileNotFoundException, ParseException {
+        System.out.println(checkUpdate("test","20181014"));
+    }
 }
