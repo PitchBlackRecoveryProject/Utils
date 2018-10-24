@@ -15,22 +15,21 @@
  */
 package com.github.pbrp.utils;
 
-import static com.github.pbrp.utils.Release.writeToFile;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
-import org.apache.commons.io.FileUtils;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.apache.commons.io.FileUtils;
 
 /**
  *
@@ -38,7 +37,7 @@ import org.json.simple.parser.ParseException;
  */
 public class App {
     
-    public static int checkUpdate(String s1, String s2) throws MalformedURLException, FileNotFoundException, IOException, ParseException {
+    public static int checkUpdate(String[] input) throws MalformedURLException, FileNotFoundException, IOException, ParseException {
         URL url = new URL("https://raw.githubusercontent.com/PitchBlack-Recovery/vendor_pb/pb/pb.releases");
 
         JSONParser parser = new JSONParser();
@@ -46,22 +45,42 @@ public class App {
 
         Object jsonObj = parser.parse(reader);
         JSONObject release = (JSONObject) jsonObj;
-        
-        //System.out.println(jsonObject.toString());
-        
-        if(release.containsKey(s1)) {
-            if(release.get(s1).equals(s2)) {
+                
+        if(release.containsKey(input[0])) {
+            if(release.get(input[0]).equals(input[1])) {
+                // Official
                 return 1;
             } else {
+                // Update available
                 return 0;
             }
             
         } else {
+            // UnOfficial
             return -1;
         }
     }
     
+    public static String[] parseInfo(File s) throws IOException {
+        String[] result = new String[2];
+        
+        String info = FileUtils.readFileToString(s);
+        
+        Pattern ptn = Pattern.compile("ro.omni.version=[^\\n\\t-]+-(\\d+)-([^\\n\\t-]+)");
+        Matcher matchPtn = ptn.matcher(info);
+        
+        if(matchPtn.find()) {
+            result[1] = matchPtn.group(1);
+            result[0] = matchPtn.group(2);
+        }
+        
+        return result;
+    }
+    
     public static void main(String[] args) throws MalformedURLException, IOException, FileNotFoundException, ParseException {
-        System.out.println(checkUpdate("test","20181014"));
+        //System.out.println(checkUpdate());
+        String[] r = parseInfo(new File("test"));
+        System.out.println(Arrays.toString(r));
+        System.out.println(checkUpdate(r));
     }
 }
